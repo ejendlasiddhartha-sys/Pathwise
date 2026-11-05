@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import PropTypes from "prop-types";
 import { CheckCircle2, TrendingUp, AlertTriangle, ListFilter, Search, Layers } from "lucide-react";
 import SkillCard from "./SkillCard";
 
@@ -11,6 +10,11 @@ import SkillCard from "./SkillCard";
  * - Quick search and sort controls
  * - Empty states
  * - Responsive grid layout
+ *
+ * @param {Object} props
+ * @param {Array<Object>} props.skills - Array of skill gap objects
+ * @param {string} [props.title] - Section heading
+ * @param {string} [props.initialFilter] - Default active tab ("all" | "matched" | "improving" | "missing")
  */
 export default function SkillGapList({
   skills = [],
@@ -203,19 +207,3 @@ export default function SkillGapList({
     </div>
   );
 }
-
-SkillGapList.propTypes = {
-  skills: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      category: PropTypes.string,
-      current_level: PropTypes.number.isRequired,
-      required_level: PropTypes.number.isRequired,
-      gap: PropTypes.number.isRequired,
-      priority: PropTypes.string.isRequired,
-      importance: PropTypes.string,
-    })
-  ).isRequired,
-  title: PropTypes.string,
-  initialFilter: PropTypes.string,
-};

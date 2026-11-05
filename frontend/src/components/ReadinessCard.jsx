@@ -1,5 +1,4 @@
-import PropTypes from "prop-types";
-import { CheckCircle2, TrendingUp, AlertTriangle, HelpCircle, ShieldCheck } from "lucide-react";
+import { CheckCircle2, TrendingUp, AlertTriangle, ShieldCheck } from "lucide-react";
 
 /**
  * ReadinessCard Component
@@ -7,6 +6,14 @@ import { CheckCircle2, TrendingUp, AlertTriangle, HelpCircle, ShieldCheck } from
  * Displays the overall career readiness score calculated from the backend
  * formula: sum(weight * min(current_level, required_level)) / sum(weight * required_level) * 100.
  * Renders an SVG radial gauge, status tier, and quick metric pills.
+ *
+ * @param {Object} props
+ * @param {number} props.score - Career readiness percentage (0-100)
+ * @param {string} [props.careerName] - Career title
+ * @param {number} [props.matchedCount] - Count of skills meeting or exceeding requirements
+ * @param {number} [props.improvingCount] - Count of skills with partial progress
+ * @param {number} [props.missingCount] - Count of skills with level 0
+ * @param {number} [props.totalSkills] - Total skills evaluated
  */
 export default function ReadinessCard({
   score = 0,
@@ -200,12 +207,3 @@ export default function ReadinessCard({
     </div>
   );
 }
-
-ReadinessCard.propTypes = {
-  score: PropTypes.number.isRequired,
-  careerName: PropTypes.string,
-  matchedCount: PropTypes.number,
-  improvingCount: PropTypes.number,
-  missingCount: PropTypes.number,
-  totalSkills: PropTypes.number,
-};

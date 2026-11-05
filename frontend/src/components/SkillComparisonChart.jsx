@@ -1,5 +1,4 @@
 import { useState } from "react";
-import PropTypes from "prop-types";
 import {
   BarChart,
   Bar,
@@ -78,23 +77,22 @@ function CustomChartTooltip({ active, payload, label }) {
   return null;
 }
 
-CustomChartTooltip.propTypes = {
-  active: PropTypes.bool,
-  payload: PropTypes.array,
-  label: PropTypes.string,
-};
-
 /**
  * SkillComparisonChart Component
  * 
  * Interactive visualization comparing student's current proficiency
  * with the career role's required proficiency.
  * Supports toggling between a Grouped Bar Chart and a Radar Chart.
+ *
+ * @param {Object} props
+ * @param {Array<Object>} props.skills - Array of skill objects
+ * @param {string} [props.title] - Chart section title
+ * @param {string} [props.defaultView] - "bar" | "radar"
  */
 export default function SkillComparisonChart({
   skills = [],
   title = "Proficiency Gap Visualizer",
-  defaultView = "bar", // "bar" | "radar"
+  defaultView = "bar",
 }) {
   const [chartType, setChartType] = useState(defaultView);
 
@@ -280,18 +278,3 @@ export default function SkillComparisonChart({
     </div>
   );
 }
-
-SkillComparisonChart.propTypes = {
-  skills: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      current_level: PropTypes.number.isRequired,
-      required_level: PropTypes.number.isRequired,
-      gap: PropTypes.number.isRequired,
-      priority: PropTypes.string,
-      category: PropTypes.string,
-    })
-  ).isRequired,
-  title: PropTypes.string,
-  defaultView: PropTypes.oneOf(["bar", "radar"]),
-};

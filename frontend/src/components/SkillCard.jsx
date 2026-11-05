@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import { Check, AlertCircle, ArrowUpRight, Zap, BookOpen } from "lucide-react";
 import { PROFICIENCY_LEVELS } from "../data/mockDashboardData";
 
@@ -11,6 +10,17 @@ import { PROFICIENCY_LEVELS } from "../data/mockDashboardData";
  * - Priority tag (Critical, High, Medium, Low)
  * - Skill gap indicator
  * - Status indicator (Met, Needs Improvement, Missing)
+ *
+ * @param {Object} props
+ * @param {Object} props.skill - Skill data object
+ * @param {string} props.skill.name - Skill name (e.g., "JavaScript")
+ * @param {string} [props.skill.category] - "technical" | "professional"
+ * @param {number} props.skill.current_level - Current proficiency (0 to 5)
+ * @param {number} props.skill.required_level - Required career proficiency (0 to 5)
+ * @param {number} props.skill.gap - Computed skill gap (max(required - current, 0))
+ * @param {string} props.skill.priority - "Critical" | "High" | "Medium" | "Low"
+ * @param {string} [props.skill.importance] - Context note explaining requirement
+ * @param {boolean} [props.compact] - Compact presentation flag
  */
 export default function SkillCard({ skill, compact = false }) {
   if (!skill) return null;
@@ -199,16 +209,3 @@ export default function SkillCard({ skill, compact = false }) {
     </div>
   );
 }
-
-SkillCard.propTypes = {
-  skill: PropTypes.shape({
-    name: PropTypes.string.isRequired,
-    category: PropTypes.string,
-    current_level: PropTypes.number.isRequired,
-    required_level: PropTypes.number.isRequired,
-    gap: PropTypes.number.isRequired,
-    priority: PropTypes.string.isRequired,
-    importance: PropTypes.string,
-  }).isRequired,
-  compact: PropTypes.bool,
-};
