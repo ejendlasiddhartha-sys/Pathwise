@@ -23,6 +23,7 @@ import ReadinessCard from "../ReadinessCard";
 import SkillComparisonChart from "../SkillComparisonChart";
 import SkillGapList from "../SkillGapList";
 import SkillCard from "../SkillCard";
+import CareerAdvisor from "./CareerAdvisor";
 import {
   MOCK_STUDENT,
   MOCK_DASHBOARD_DATA,
@@ -30,7 +31,7 @@ import {
 } from "../../data/mockDashboardData";
 
 export default function DashboardHome({ onNavigateTab }) {
-  const { user, profile, certifications } = useAuth();
+  const { user, profile, certifications, loadRecommendations } = useAuth();
 
   // Dynamic user display name
   const displayName = profile?.firstName || user?.firstName || user?.name || user?.username || "Student";
@@ -86,11 +87,36 @@ export default function DashboardHome({ onNavigateTab }) {
 
   // Selected career track ID
   const [selectedCareerId, setSelectedCareerId] = useState(() => {
-    const goal = student?.career_goal?.toLowerCase() || "";
-    if (goal.includes("data")) return "data_analyst";
-    if (goal.includes("cloud")) return "cloud_engineer";
+    // Priority: profile.targetCareer > job role heuristic
+    const profileTarget = (
+      profile?.target_career ||
+      profile?.targetCareer ||
+      profile?.careerGoal ||
+      ""
+    ).toLowerCase();
+    if (profileTarget.includes("data")) return "data_analyst";
+    if (profileTarget.includes("cloud")) return "cloud_engineer";
+    if (profileTarget.includes("machine") || profileTarget.includes("ml")) return "machine_learning_engineer";
+    if (profileTarget.includes("backend")) return "backend_developer";
+    if (profileTarget.includes("devops")) return "devops_engineer";
+    // Fall back to job role heuristic from profile
+    const jobRole = (
+      profile?.employmentDetails?.jobRole ||
+      profile?.careerGoal ||
+      ""
+    ).toLowerCase();
+    if (jobRole.includes("data")) return "data_analyst";
+    if (jobRole.includes("cloud")) return "cloud_engineer";
     return "frontend_developer";
   });
+
+  // When career track changes, trigger a recommendation refresh
+  const handleCareerChange = (newCareerId) => {
+    setSelectedCareerId(newCareerId);
+    if (loadRecommendations) {
+      loadRecommendations(null, newCareerId, false).catch(() => {});
+    }
+  };
 
   const currentCareerData = useMemo(() => {
     const matched = MOCK_ALTERNATIVE_CAREERS.find((c) => c.id === selectedCareerId);
@@ -284,14 +310,20 @@ export default function DashboardHome({ onNavigateTab }) {
         </div>
       </div>
 
-      {/* 3. DIAGNOSTIC HERO & BENCHMARK DIAGNOSTIC (Milestone 1 & 2 Preservation) */}
+      {/* 3. AI CAREER ADVISOR — Gemini-powered recommendations */}
+      <CareerAdvisor
+        targetCareerId={selectedCareerId}
+        targetCareerName={currentCareerData.career}
+      />
+
+      {/* 4. DIAGNOSTIC HERO & BENCHMARK DIAGNOSTIC (Milestone 1 & 2 Preservation) */}
       <CareerOverview
         student={student}
         careerName={currentCareerData.career}
         careerDescription={currentCareerData.career_description}
         careerList={MOCK_ALTERNATIVE_CAREERS}
         selectedCareerId={selectedCareerId}
-        onCareerChange={setSelectedCareerId}
+        onCareerChange={handleCareerChange}
         readinessScore={currentCareerData.readiness_score}
       />
 

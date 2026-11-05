@@ -5,3 +5,4 @@ pydantic
 email-validator
 python-dotenv
 httpx
+google-genai>=0.1.1

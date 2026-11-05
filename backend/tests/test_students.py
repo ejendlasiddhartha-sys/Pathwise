@@ -37,8 +37,9 @@ class TestStudentEndpoints(unittest.TestCase):
         cls.engine.dispose()
 
     def setUp(self):
-        # Clean table before each test
+        # Clean tables before each test
         with Session(self.engine) as session:
+            session.exec(SQLModel.metadata.tables["careerrecommendation"].delete())
             session.exec(SQLModel.metadata.tables["student"].delete())
             session.commit()
 
@@ -49,6 +50,7 @@ class TestStudentEndpoints(unittest.TestCase):
             "email": "rahul@example.com",
             "education": "B.Tech CSE, 2nd Year",
             "career_goal": "Frontend Developer",
+            "target_career": "Frontend Developer",
         }
         response = self.client.post("/api/students", json=payload)
         self.assertEqual(response.status_code, 201)
@@ -58,6 +60,7 @@ class TestStudentEndpoints(unittest.TestCase):
         self.assertEqual(data["email"], "rahul@example.com")
         self.assertEqual(data["education"], "B.Tech CSE, 2nd Year")
         self.assertEqual(data["career_goal"], "Frontend Developer")
+        self.assertEqual(data["target_career"], "Frontend Developer")
 
     def test_retrieve_student_success(self):
         """Test GET /api/students/{id} retrieves an existing student profile."""
@@ -112,6 +115,107 @@ class TestStudentEndpoints(unittest.TestCase):
         self.assertIn("detail", data)
         self.assertIn("already registered", data["detail"].lower())
 
+    def test_update_student_success(self):
+        """Test PUT /api/students/{id} updates existing student and preserves ID."""
+        create_res = self.client.post("/api/students", json={
+            "name": "Aarav",
+            "email": "aarav@example.com",
+            "education": "Class 12, MPC",
+            "career_goal": "Frontend Developer",
+        })
+        self.assertEqual(create_res.status_code, 201)
+        original_id = create_res.json()["id"]
+
+        update_payload = {
+            "name": "Aarav Sharma",
+            "education": "B.Tech CSE, 1st Year",
+            "target_career": "Cloud Engineer",
+            "experience": "Associate Intern at Tech Corp",
+        }
+        update_res = self.client.put(f"/api/students/{original_id}", json=update_payload)
+        self.assertEqual(update_res.status_code, 200)
+        data = update_res.json()
+        self.assertEqual(data["id"], original_id)
+        self.assertEqual(data["name"], "Aarav Sharma")
+        self.assertEqual(data["education"], "B.Tech CSE, 1st Year")
+        self.assertEqual(data["target_career"], "Cloud Engineer")
+        self.assertEqual(data["career_goal"], "Cloud Engineer")
+        self.assertEqual(data["experience"], "Associate Intern at Tech Corp")
+
+    def test_update_student_not_found(self):
+        """Test PUT /api/students/{id} returns 404 for nonexistent student."""
+        res = self.client.put("/api/students/88888", json={"name": "Ghost"})
+        self.assertEqual(res.status_code, 404)
+
+    def test_update_student_duplicate_email(self):
+        """Test PUT /api/students/{id} rejects updating email to another existing student's email."""
+        self.client.post("/api/students", json={
+            "name": "Student A",
+            "email": "studenta@example.com",
+            "education": "Undergraduate",
+            "career_goal": "Frontend Developer",
+        })
+        res_b = self.client.post("/api/students", json={
+            "name": "Student B",
+            "email": "studentb@example.com",
+            "education": "Undergraduate",
+            "career_goal": "Data Analyst",
+        })
+        student_b_id = res_b.json()["id"]
+
+        # Attempt to set Student B's email to Student A's email
+        conflict_res = self.client.put(f"/api/students/{student_b_id}", json={
+            "email": "studenta@example.com",
+        })
+        self.assertEqual(conflict_res.status_code, 409)
+
+    def test_recommendations_endpoint_and_caching(self):
+        """Test GET /api/students/{id}/recommendations returns structured analysis and caches."""
+        create_res = self.client.post("/api/students", json={
+            "name": "Karan",
+            "email": "karan@example.com",
+            "education": "B.Tech CSE, 3rd Year",
+            "career_goal": "Frontend Developer",
+            "target_career": "Frontend Developer",
+            "skills": [
+                {"name": "HTML", "current_level": 4},
+                {"name": "CSS", "current_level": 3},
+                {"name": "JavaScript", "current_level": 2},
+            ],
+        })
+        self.assertEqual(create_res.status_code, 201)
+        student_id = create_res.json()["id"]
+
+        # First request: generates recommendation
+        rec_res = self.client.get(f"/api/students/{student_id}/recommendations")
+        self.assertEqual(rec_res.status_code, 200)
+        data = rec_res.json()
+        self.assertEqual(data["student_id"], student_id)
+        self.assertEqual(data["target_career_id"], "frontend_developer")
+        self.assertIn("readiness_score", data)
+        self.assertGreater(data["readiness_score"], 0)
+        self.assertIn("recommendation", data)
+        self.assertIn("summary", data["recommendation"])
+        self.assertIn("priority_skills", data["recommendation"])
+        self.assertLessEqual(len(data["recommendation"]["priority_skills"]), 3)
+        self.assertIn("certifications", data["recommendation"])
+        self.assertLessEqual(len(data["recommendation"]["certifications"]), 3)
+
+        # Second request without significant changes: reuses cache (cached == True)
+        second_rec_res = self.client.get(f"/api/students/{student_id}/recommendations")
+        self.assertEqual(second_rec_res.status_code, 200)
+        second_data = second_rec_res.json()
+        self.assertTrue(second_data["cached"])
+        self.assertEqual(second_data["profile_fingerprint"], data["profile_fingerprint"])
+
+        # Force refresh: bypasses cache
+        refresh_res = self.client.post(f"/api/students/{student_id}/recommendations/refresh", json={
+            "force": True,
+        })
+        self.assertEqual(refresh_res.status_code, 200)
+        refresh_data = refresh_res.json()
+        self.assertFalse(refresh_data["cached"])
+
     def test_create_student_invalid_email(self):
         """Test POST /api/students rejects invalid email address with 422."""
         payload = {
@@ -128,7 +232,6 @@ class TestStudentEndpoints(unittest.TestCase):
         payload = {
             "name": "Rahul",
             "email": "rahul@example.com",
-            # missing education and career_goal
         }
         response = self.client.post("/api/students", json=payload)
         self.assertEqual(response.status_code, 422)

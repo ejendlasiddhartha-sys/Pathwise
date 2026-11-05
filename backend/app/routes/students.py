@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 
 from app.database import get_session
-from app.schemas import StudentCreate, StudentResponse
+from app.schemas import StudentCreate, StudentResponse, StudentUpdate
 from app.services import student_service
 
 router = APIRouter(prefix="/api/students", tags=["students"])
@@ -30,6 +30,7 @@ def create_student_endpoint(
     - **email**: Valid and unique email address
     - **education**: Current educational degree, program, or year
     - **career_goal**: Target career or job role
+    - **target_career**: Explicit target career role
     """
     try:
         student = student_service.create_student(session, student_in)
@@ -63,3 +64,39 @@ def get_student_endpoint(
             detail=f"Student with ID {id} not found.",
         )
     return student
+
+
+@router.put(
+    "/{id}",
+    response_model=StudentResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Update a student profile",
+    responses={
+        200: {"description": "Student profile updated successfully"},
+        404: {"description": "Student not found"},
+        409: {"description": "Conflict: duplicate email address"},
+        422: {"description": "Unprocessable Entity: validation error"},
+    },
+)
+def update_student_endpoint(
+    id: int,
+    student_in: StudentUpdate,
+    session: Session = Depends(get_session),
+):
+    """Update an existing student profile in the database.
+
+    Preserves the existing student ID and updates modified fields without creating duplicates.
+    """
+    try:
+        updated_student = student_service.update_student(session, id, student_in)
+        if not updated_student:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Student with ID {id} not found.",
+            )
+        return updated_student
+    except student_service.DuplicateEmailError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(exc),
+        )

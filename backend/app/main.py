@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.database import create_db_and_tables
+from app.routes.recommendations import router as recommendations_router
 from app.routes.students import router as students_router
 from app.routes.system import router as system_router
 
@@ -45,6 +46,7 @@ app.add_middleware(
 
 app.include_router(system_router)
 app.include_router(students_router)
+app.include_router(recommendations_router)
 
 
 @app.exception_handler(Exception)

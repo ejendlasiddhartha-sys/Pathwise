@@ -15,14 +15,42 @@ import {
   Sparkles,
   Layers,
   Search,
+  Target,
+  ChevronDown,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import InteractiveDatePicker, { calculateAge } from "../InteractiveDatePicker";
+
+const CAREER_OPTIONS = [
+  { id: "frontend_developer", label: "Frontend Developer" },
+  { id: "data_analyst", label: "Data Analyst" },
+  { id: "cloud_engineer", label: "Cloud Engineer" },
+  { id: "machine_learning_engineer", label: "Machine Learning Engineer" },
+  { id: "backend_developer", label: "Backend Developer" },
+  { id: "devops_engineer", label: "DevOps Engineer" },
+  { id: "cybersecurity_analyst", label: "Cybersecurity Analyst" },
+  { id: "product_manager", label: "Product Manager" },
+  { id: "other", label: "Other / Custom" },
+];
 
 export default function PersonalDetailsView() {
   const { profile, user, saveFullProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [saveStatus, setSaveStatus] = useState("idle"); // "idle" | "saving" | "success" | "error"
+
+  // Resolve initial target career
+  const initialTargetCareer =
+    profile?.targetCareer ||
+    profile?.target_career ||
+    profile?.careerGoal ||
+    "Frontend Developer";
+
+  const initialTargetCareerId = useMemo(() => {
+    const match = CAREER_OPTIONS.find(
+      (o) => o.label.toLowerCase() === initialTargetCareer.toLowerCase()
+    );
+    return match ? match.id : "other";
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Form state initialized with saved profile
   const [formData, setFormData] = useState({
@@ -31,6 +59,8 @@ export default function PersonalDetailsView() {
     middleName: profile?.middleName || "",
     lastName: profile?.lastName || user?.lastName || "",
     dob: profile?.dob || "2003-08-15",
+    targetCareerId: initialTargetCareerId,
+    targetCareerCustom: initialTargetCareerId === "other" ? initialTargetCareer : "",
     educationType: profile?.educationType || "Undergraduate",
     educationDetails: {
       schoolGrade: profile?.educationDetails?.schoolGrade || "Class 12",
@@ -51,13 +81,24 @@ export default function PersonalDetailsView() {
     },
   });
 
+  // Derive the resolved target career label
+  const resolvedTargetCareer = useMemo(() => {
+    if (formData.targetCareerId === "other") return formData.targetCareerCustom || "Other";
+    return CAREER_OPTIONS.find((o) => o.id === formData.targetCareerId)?.label || "Frontend Developer";
+  }, [formData.targetCareerId, formData.targetCareerCustom]);
+
   const ageData = useMemo(() => calculateAge(formData.dob), [formData.dob]);
 
   const handleSave = async (e) => {
     e.preventDefault();
     setSaveStatus("saving");
     try {
-      await saveFullProfile(formData);
+      // Merge the resolved target career into the saved profile
+      await saveFullProfile({
+        ...formData,
+        targetCareer: resolvedTargetCareer,
+        target_career: resolvedTargetCareer,
+      });
       setSaveStatus("success");
       setIsEditing(false);
       setTimeout(() => setSaveStatus("idle"), 3000);
@@ -319,7 +360,71 @@ export default function PersonalDetailsView() {
         )}
       </div>
 
-      {/* 3. EMPLOYMENT INFORMATION CARD */}
+      {/* 3. TARGET CAREER PATH CARD */}
+      <div className="rounded-3xl border border-sky-200/70 bg-gradient-to-br from-white to-sky-50/40 p-6 sm:p-8 shadow-xs">
+        <div className="flex items-center gap-2.5 border-b border-sky-100 pb-4">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100 text-sky-600">
+            <Target className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-slate-900">Target Career Path</h2>
+            <p className="text-xs text-slate-500">Your AI recommendations are based on this goal</p>
+          </div>
+        </div>
+
+        {isEditing ? (
+          <div className="mt-5 space-y-3">
+            <div>
+              <label className="block text-xs font-semibold uppercase text-slate-600 mb-1">
+                Select Your Career Goal
+              </label>
+              <select
+                value={formData.targetCareerId}
+                onChange={(e) => setFormData({ ...formData, targetCareerId: e.target.value })}
+                className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-200"
+              >
+                {CAREER_OPTIONS.map((opt) => (
+                  <option key={opt.id} value={opt.id}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {formData.targetCareerId === "other" && (
+              <div>
+                <label className="block text-xs font-semibold uppercase text-slate-600">
+                  Enter Your Target Career
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. UI/UX Designer, Mobile App Developer…"
+                  value={formData.targetCareerCustom}
+                  onChange={(e) => setFormData({ ...formData, targetCareerCustom: e.target.value })}
+                  className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-200"
+                />
+              </div>
+            )}
+
+            <p className="text-[11px] text-slate-400">
+              Changing your career goal will trigger a fresh AI analysis on save.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-5 flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-100 text-sky-600">
+              <Target className="h-6 w-6" />
+            </div>
+            <div>
+              <span className="text-xs text-slate-400 block">Career Goal</span>
+              <span className="text-base font-extrabold text-sky-800">{resolvedTargetCareer}</span>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                AI Advisor recommendations are tailored for this track
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 4. EMPLOYMENT INFORMATION CARD */}
       <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xs">
         <div className="flex items-center gap-2.5 border-b border-slate-100 pb-4">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
