@@ -10,9 +10,11 @@ from app.schemas import PrioritySkill, RecommendationData, RecommendedCertificat
 logger = logging.getLogger("pathwise.gemini")
 
 # Cost-efficient supported model as specified
-PREFERRED_MODEL = "gemini-2.5-flash-lite"
-FALLBACK_MODELS = ["gemini-2.5-flash", "gemini-1.5-flash"]
+PREFERRED_MODEL = "gemini-3.5-flash-lite"
 
+FALLBACK_MODELS = [
+    "gemini-3.8-flash"
+]
 
 def get_verified_baseline_recommendation(
     target_career_name: str,
