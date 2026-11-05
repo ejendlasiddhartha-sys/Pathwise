@@ -10,6 +10,10 @@ import {
   X,
   ChevronDown,
   UserCheck,
+  Route,
+  Award,
+  Settings,
+  User,
 } from "lucide-react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -39,7 +43,7 @@ export default function Navbar() {
     logout();
     setProfileDropdownOpen(false);
     setMobileMenuOpen(false);
-    navigate("/");
+    navigate("/auth", { state: { mode: "login" } });
   };
 
   return (
@@ -94,33 +98,63 @@ export default function Navbar() {
 
               {/* Profile Dropdown */}
               {profileDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-slate-200 bg-white p-2 text-slate-800 shadow-xl animate-fade-in z-50">
+                <div className="absolute right-0 mt-2 w-60 rounded-3xl border border-slate-200 bg-white p-2 text-slate-800 shadow-2xl animate-fade-in z-50">
                   <div className="border-b border-slate-100 px-3 py-2">
-                    <p className="text-xs font-semibold text-slate-400 uppercase">Signed in as</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Signed in as</p>
                     <p className="text-sm font-bold text-slate-900 truncate">
-                      @{user?.username || "student"}
+                      {displayName}
                     </p>
-                    {user?.email && (
-                      <p className="text-xs text-slate-500 truncate">{user.email}</p>
-                    )}
+                    <p className="text-xs text-slate-500 truncate">@{user?.username || "student"}</p>
                   </div>
 
                   <div className="py-1">
                     <Link
-                      to="/setup-profile"
-                      onClick={() => setProfileDropdownOpen(false)}
-                      className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition"
-                    >
-                      <UserCheck className="h-4 w-4 text-sky-500" />
-                      Profile Setup Wizard
-                    </Link>
-                    <Link
                       to="/dashboard"
                       onClick={() => setProfileDropdownOpen(false)}
-                      className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition"
+                      className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition"
                     >
                       <LayoutDashboard className="h-4 w-4 text-sky-500" />
-                      My Dashboard
+                      Dashboard Home
+                    </Link>
+                    <Link
+                      to="/dashboard?tab=roadmap"
+                      onClick={() => setProfileDropdownOpen(false)}
+                      className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition"
+                    >
+                      <Route className="h-4 w-4 text-sky-500" />
+                      My Roadmap
+                    </Link>
+                    <Link
+                      to="/dashboard?tab=certifications"
+                      onClick={() => setProfileDropdownOpen(false)}
+                      className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition"
+                    >
+                      <Award className="h-4 w-4 text-sky-500" />
+                      Certifications
+                    </Link>
+                    <Link
+                      to="/dashboard?tab=personal-details"
+                      onClick={() => setProfileDropdownOpen(false)}
+                      className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition"
+                    >
+                      <User className="h-4 w-4 text-sky-500" />
+                      Personal Details
+                    </Link>
+                    <Link
+                      to="/dashboard?tab=settings"
+                      onClick={() => setProfileDropdownOpen(false)}
+                      className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition"
+                    >
+                      <Settings className="h-4 w-4 text-slate-500" />
+                      Settings
+                    </Link>
+                    <Link
+                      to="/setup-profile"
+                      onClick={() => setProfileDropdownOpen(false)}
+                      className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-pink-600 hover:bg-pink-50 transition"
+                    >
+                      <UserCheck className="h-4 w-4 text-pink-500" />
+                      Setup Wizard
                     </Link>
                   </div>
 
@@ -128,7 +162,7 @@ export default function Navbar() {
                     <button
                       type="button"
                       onClick={handleLogout}
-                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 transition"
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition"
                     >
                       <LogOut className="h-4 w-4" />
                       Sign Out
