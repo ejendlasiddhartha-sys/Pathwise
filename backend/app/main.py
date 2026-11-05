@@ -32,7 +32,7 @@ deployed_origins = [
     if origin.strip()
 ]
 
-ALLOWED_ORIGINS = list(set(LOCAL_FRONTEND_ORIGINS + deployed_origins))
+ALLOWED_ORIGINS = list(dict.fromkeys(LOCAL_FRONTEND_ORIGINS + deployed_origins))
 
 
 @asynccontextmanager
