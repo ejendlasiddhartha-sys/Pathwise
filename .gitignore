@@ -243,3 +243,24 @@ pnpm-debug.log*
 # Build output
 dist/
 coverage/
+
+# IDE and editor temporary files
+.idea/
+.vs/
+*.swp
+*.swo
+*~
+*.suo
+*.user
+.DS_Store
+Thumbs.db
+
+# SQLite files created while the database is open
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Local env files for each app. Example files stay tracked.
+frontend/.env
+backend/.env
+!**/.env.example
