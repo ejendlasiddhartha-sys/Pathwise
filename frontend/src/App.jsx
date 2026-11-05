@@ -1,16 +1,28 @@
 import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar";
+import InteractiveBackground from "./components/InteractiveBackground";
+import { AuthProvider } from "./context/AuthContext";
 import Dashboard from "./pages/Dashboard";
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
+import ProfileSetup from "./pages/ProfileSetup";
+import Auth from "./pages/Auth";
 
 function NotFound() {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-      <h1 className="text-2xl font-semibold text-[#0B1F3A]">Page not found</h1>
-      <p className="mt-2 text-slate-600">That address is not part of Pathwise.</p>
-      <Link to="/" className="mt-4 inline-block text-sm font-semibold text-blue-700">
-        Back to home
+    <section className="relative z-10 mx-auto max-w-lg rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-lg">
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-50 text-sky-600 font-bold text-2xl">
+        404
+      </div>
+      <h1 className="mt-4 text-2xl font-bold text-slate-900">Page not found</h1>
+      <p className="mt-2 text-sm text-slate-600">
+        The destination address is not part of Pathwise.
+      </p>
+      <Link
+        to="/"
+        className="mt-6 inline-flex items-center gap-2 rounded-xl bg-sky-500 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-sky-600"
+      >
+        Back to Home
       </Link>
     </section>
   );
@@ -18,18 +30,42 @@ function NotFound() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <div className="min-h-screen bg-slate-100 text-slate-900">
-        <Navbar />
-        <main className="mx-auto max-w-6xl px-4 py-8">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </main>
-      </div>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <div className="relative min-h-screen bg-white text-slate-900 flex flex-col font-sans selection:bg-sky-100 selection:text-sky-900">
+          {/* Subtle Canvas Interactive Animated Background */}
+          <InteractiveBackground />
+
+          {/* Top Sticky Navigation */}
+          <Navbar />
+
+          {/* Main App Container */}
+          <main className="relative z-10 flex-1 mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/setup-profile" element={<ProfileSetup />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </main>
+
+          {/* Subtle Aesthetic Footer */}
+          <footer className="relative z-10 border-t border-slate-200/80 bg-white/70 py-6 text-center text-xs text-slate-500 backdrop-blur-xs">
+            <div className="mx-auto max-w-6xl px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <p className="font-medium text-slate-600">
+                Pathwise &bull; Student Skill Gap & Career Diagnostic Platform
+              </p>
+              <div className="flex items-center gap-4 text-slate-400">
+                <Link to="/" className="hover:text-sky-600 transition">Home</Link>
+                <Link to="/setup-profile" className="hover:text-sky-600 transition">Set Up Profile</Link>
+                <Link to="/dashboard" className="hover:text-sky-600 transition">Dashboard</Link>
+              </div>
+            </div>
+          </footer>
+        </div>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }

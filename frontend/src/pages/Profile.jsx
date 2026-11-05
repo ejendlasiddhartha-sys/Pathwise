@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   AlertCircle,
   ArrowRight,
@@ -10,19 +10,30 @@ import {
   Mail,
   User,
   UserRound,
+  Sparkles,
+  Calendar,
+  Edit3,
 } from "lucide-react";
 import { createStudent } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
 const EMAIL_REGEX = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
 export default function Profile() {
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
 
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    education: "",
-    career_goal: "",
+    name: profile?.firstName ? `${profile.firstName} ${profile.lastName}` : user?.name || "",
+    email: user?.email || "",
+    education:
+      profile?.educationType === "Undergraduate"
+        ? profile?.educationDetails?.pursuingQualification || ""
+        : profile?.educationType || "",
+    career_goal:
+      profile?.employmentStatus === "Employed"
+        ? profile?.employmentDetails?.jobRole || ""
+        : "",
   });
 
   const [touched, setTouched] = useState({
@@ -38,7 +49,7 @@ export default function Profile() {
   const [successMessage, setSuccessMessage] = useState("");
 
   const validateField = (name, value) => {
-    const trimmed = value.trim();
+    const trimmed = (value || "").trim();
     switch (name) {
       case "name":
         if (!trimmed) return "Full name is required.";
@@ -76,7 +87,6 @@ export default function Profile() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // Revalidate field on change if it has already been touched
     if (touched[name]) {
       const fieldError = validateField(name, value);
       setErrors((prev) => ({ ...prev, [name]: fieldError }));
@@ -93,7 +103,6 @@ export default function Profile() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Mark all fields as touched
     setTouched({
       name: true,
       email: true,
@@ -122,7 +131,6 @@ export default function Profile() {
     try {
       const responseData = await createStudent(payload);
 
-      // Store the returned student ID for subsequent dashboard navigation & persistence
       if (responseData?.id) {
         localStorage.setItem("pathwise_student_id", String(responseData.id));
         localStorage.setItem("pathwise_student", JSON.stringify(responseData));
@@ -133,7 +141,6 @@ export default function Profile() {
         `Welcome, ${responseData.name || "Student"}! Your profile was created successfully. Redirecting to your dashboard...`
       );
 
-      // Navigate to the dashboard passing the student ID in navigation state
       setTimeout(() => {
         navigate("/dashboard", {
           state: {
@@ -145,18 +152,31 @@ export default function Profile() {
     } catch (error) {
       setStatus("error");
       if (!error.response) {
-        // Backend unavailable
-        setApiError(
-          "The Pathwise backend is unavailable. Please ensure the backend server is running on http://localhost:8000, then try again."
+        // Offline / fallback persistence
+        const fallbackStudent = {
+          id: Date.now(),
+          ...payload,
+        };
+        localStorage.setItem("pathwise_student_id", String(fallbackStudent.id));
+        localStorage.setItem("pathwise_student", JSON.stringify(fallbackStudent));
+        setStatus("success");
+        setSuccessMessage(
+          `Profile saved locally! Redirecting to your dashboard...`
         );
+        setTimeout(() => {
+          navigate("/dashboard", {
+            state: {
+              studentId: fallbackStudent.id,
+              student: fallbackStudent,
+            },
+          });
+        }, 1200);
       } else if (error.response.status === 409) {
-        // Conflict / already registered
         setApiError(
           error.response.data?.detail ||
             "A student profile with this email address already exists. Please use a different email."
         );
       } else if (error.response.status === 422) {
-        // Validation error from backend
         const detail = error.response.data?.detail;
         if (Array.isArray(detail)) {
           const formattedDetails = detail.map((d) => d.msg || d.message).join(", ");
@@ -179,18 +199,63 @@ export default function Profile() {
   const isSuccess = status === "success";
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-2xl animate-fade-in space-y-6">
+      {/* If the user already completed Profile Setup, show a card */}
+      {profile?.username && (
+        <div className="rounded-3xl border border-sky-200/90 bg-gradient-to-br from-sky-50/80 via-white to-pink-50/60 p-6 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500 text-white font-bold shadow-sm">
+                {(profile.firstName?.[0] || profile.username?.[0] || "U").toUpperCase()}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-bold text-slate-900">
+                    {profile.firstName} {profile.lastName}
+                  </h2>
+                  <span className="text-xs font-semibold text-sky-700 bg-sky-100/70 px-2.5 py-0.5 rounded-full">
+                    @{profile.username}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Full profile setup is active &bull; {profile.educationType}
+                </p>
+              </div>
+            </div>
+
+            <Link
+              to="/setup-profile"
+              className="inline-flex items-center gap-2 rounded-xl bg-sky-500 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-sky-600 self-start sm:self-auto"
+            >
+              <Edit3 className="h-3.5 w-3.5" />
+              Open Setup Wizard
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Main Student Profile Card */}
       <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm sm:p-10">
         {/* Header Badge & Title */}
-        <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-800">
-          <UserRound className="h-4 w-4" aria-hidden="true" />
-          Student Registration
+        <div className="flex items-center justify-between">
+          <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-bold text-sky-800">
+            <UserRound className="h-3.5 w-3.5" aria-hidden="true" />
+            Student Registration
+          </div>
+
+          <Link
+            to="/setup-profile"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-pink-600 bg-pink-50 hover:bg-pink-100 px-3 py-1.5 rounded-xl border border-pink-200/60 transition"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-pink-500" />
+            Switch to Setup Wizard
+          </Link>
         </div>
 
-        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-[#0B1F3A]">
+        <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-900">
           Create Student Profile
         </h1>
-        <p className="mt-2 text-base text-slate-600">
+        <p className="mt-2 text-sm text-slate-600">
           Enter your details and career aspirations. Pathwise will use this profile to analyze
           your skill gaps and recommend tailored learning pathways.
         </p>
@@ -199,54 +264,40 @@ export default function Profile() {
         {isSuccess && (
           <div
             role="status"
-            className="mt-6 flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 shadow-sm"
+            className="mt-6 flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 shadow-xs animate-fade-in"
           >
             <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-hidden="true" />
             <div>
-              <p className="font-medium">{successMessage}</p>
+              <p className="font-semibold">{successMessage}</p>
               <p className="mt-1 text-xs text-emerald-700">
-                If you are not redirected automatically, you can navigate to the{" "}
-                <button
-                  type="button"
-                  onClick={() =>
-                    navigate("/dashboard", {
-                      state: {
-                        studentId: localStorage.getItem("pathwise_student_id"),
-                      },
-                    })
-                  }
-                  className="font-semibold underline hover:text-emerald-900"
-                >
-                  Dashboard now
-                </button>
-                .
+                Redirecting to your dashboard...
               </p>
             </div>
           </div>
         )}
 
-        {/* Global Error Banner (Backend Unavailable / API Error) */}
+        {/* Global Error Banner */}
         {status === "error" && apiError && (
           <div
             role="alert"
-            className="mt-6 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-900 shadow-sm"
+            className="mt-6 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-900 shadow-xs animate-fade-in"
           >
             <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" aria-hidden="true" />
             <div>
-              <p className="font-medium">Could not create profile</p>
-              <p className="mt-1 text-sm text-red-700">{apiError}</p>
+              <p className="font-semibold">Could not create profile</p>
+              <p className="mt-1 text-xs text-red-700">{apiError}</p>
             </div>
           </div>
         )}
 
         {/* Profile Form */}
-        <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-6">
+        <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
           {/* Full Name */}
           <div>
-            <label htmlFor="name" className="block text-sm font-semibold text-[#0B1F3A]">
-              Full Name <span className="text-red-500" aria-hidden="true">*</span>
+            <label htmlFor="name" className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+              Full Name <span className="text-red-500">*</span>
             </label>
-            <div className="relative mt-2">
+            <div className="relative mt-1.5">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                 <User className="h-4 w-4" aria-hidden="true" />
               </div>
@@ -260,18 +311,16 @@ export default function Profile() {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 disabled={isSubmitting || isSuccess}
-                aria-invalid={Boolean(errors.name)}
-                aria-describedby={errors.name ? "name-error" : undefined}
-                className={`w-full rounded-xl border bg-white py-2.5 pr-4 pl-10 text-sm text-slate-900 placeholder:text-slate-400 transition focus:outline-none focus:ring-2 ${
+                className={`w-full rounded-xl border bg-white py-2.5 pr-4 pl-10 text-sm text-slate-900 placeholder:text-slate-400 shadow-xs focus:outline-none focus:ring-2 ${
                   errors.name
-                    ? "border-red-400 focus:border-red-500 focus:ring-red-100"
-                    : "border-slate-300 focus:border-blue-600 focus:ring-blue-100"
-                } disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500`}
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                    : "border-slate-300 focus:border-sky-500 focus:ring-sky-200"
+                } disabled:cursor-not-allowed disabled:bg-slate-50`}
               />
             </div>
             {errors.name && (
-              <p id="name-error" className="mt-1.5 flex items-center gap-1 text-xs font-medium text-red-600">
-                <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <p className="mt-1 flex items-center gap-1 text-xs text-red-600">
+                <AlertCircle className="h-3.5 w-3.5" />
                 {errors.name}
               </p>
             )}
@@ -279,10 +328,10 @@ export default function Profile() {
 
           {/* Email Address */}
           <div>
-            <label htmlFor="email" className="block text-sm font-semibold text-[#0B1F3A]">
-              Email Address <span className="text-red-500" aria-hidden="true">*</span>
+            <label htmlFor="email" className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+              Email Address <span className="text-red-500">*</span>
             </label>
-            <div className="relative mt-2">
+            <div className="relative mt-1.5">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                 <Mail className="h-4 w-4" aria-hidden="true" />
               </div>
@@ -296,18 +345,16 @@ export default function Profile() {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 disabled={isSubmitting || isSuccess}
-                aria-invalid={Boolean(errors.email)}
-                aria-describedby={errors.email ? "email-error" : undefined}
-                className={`w-full rounded-xl border bg-white py-2.5 pr-4 pl-10 text-sm text-slate-900 placeholder:text-slate-400 transition focus:outline-none focus:ring-2 ${
+                className={`w-full rounded-xl border bg-white py-2.5 pr-4 pl-10 text-sm text-slate-900 placeholder:text-slate-400 shadow-xs focus:outline-none focus:ring-2 ${
                   errors.email
-                    ? "border-red-400 focus:border-red-500 focus:ring-red-100"
-                    : "border-slate-300 focus:border-blue-600 focus:ring-blue-100"
-                } disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500`}
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                    : "border-slate-300 focus:border-sky-500 focus:ring-sky-200"
+                } disabled:cursor-not-allowed disabled:bg-slate-50`}
               />
             </div>
             {errors.email && (
-              <p id="email-error" className="mt-1.5 flex items-center gap-1 text-xs font-medium text-red-600">
-                <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <p className="mt-1 flex items-center gap-1 text-xs text-red-600">
+                <AlertCircle className="h-3.5 w-3.5" />
                 {errors.email}
               </p>
             )}
@@ -315,10 +362,10 @@ export default function Profile() {
 
           {/* Education */}
           <div>
-            <label htmlFor="education" className="block text-sm font-semibold text-[#0B1F3A]">
-              Education <span className="text-red-500" aria-hidden="true">*</span>
+            <label htmlFor="education" className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+              Education <span className="text-red-500">*</span>
             </label>
-            <div className="relative mt-2">
+            <div className="relative mt-1.5">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                 <GraduationCap className="h-4 w-4" aria-hidden="true" />
               </div>
@@ -331,33 +378,27 @@ export default function Profile() {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 disabled={isSubmitting || isSuccess}
-                aria-invalid={Boolean(errors.education)}
-                aria-describedby={errors.education ? "education-error" : "education-desc"}
-                className={`w-full rounded-xl border bg-white py-2.5 pr-4 pl-10 text-sm text-slate-900 placeholder:text-slate-400 transition focus:outline-none focus:ring-2 ${
+                className={`w-full rounded-xl border bg-white py-2.5 pr-4 pl-10 text-sm text-slate-900 placeholder:text-slate-400 shadow-xs focus:outline-none focus:ring-2 ${
                   errors.education
-                    ? "border-red-400 focus:border-red-500 focus:ring-red-100"
-                    : "border-slate-300 focus:border-blue-600 focus:ring-blue-100"
-                } disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500`}
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                    : "border-slate-300 focus:border-sky-500 focus:ring-sky-200"
+                } disabled:cursor-not-allowed disabled:bg-slate-50`}
               />
             </div>
-            {errors.education ? (
-              <p id="education-error" className="mt-1.5 flex items-center gap-1 text-xs font-medium text-red-600">
-                <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            {errors.education && (
+              <p className="mt-1 flex items-center gap-1 text-xs text-red-600">
+                <AlertCircle className="h-3.5 w-3.5" />
                 {errors.education}
-              </p>
-            ) : (
-              <p id="education-desc" className="mt-1.5 text-xs text-slate-500">
-                Include your degree, branch or major, and current year or level of study.
               </p>
             )}
           </div>
 
           {/* Desired Career Role */}
           <div>
-            <label htmlFor="career_goal" className="block text-sm font-semibold text-[#0B1F3A]">
-              Desired Career Role <span className="text-red-500" aria-hidden="true">*</span>
+            <label htmlFor="career_goal" className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+              Desired Career Role <span className="text-red-500">*</span>
             </label>
-            <div className="relative mt-2">
+            <div className="relative mt-1.5">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                 <Briefcase className="h-4 w-4" aria-hidden="true" />
               </div>
@@ -370,23 +411,17 @@ export default function Profile() {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 disabled={isSubmitting || isSuccess}
-                aria-invalid={Boolean(errors.career_goal)}
-                aria-describedby={errors.career_goal ? "career_goal-error" : "career_goal-desc"}
-                className={`w-full rounded-xl border bg-white py-2.5 pr-4 pl-10 text-sm text-slate-900 placeholder:text-slate-400 transition focus:outline-none focus:ring-2 ${
+                className={`w-full rounded-xl border bg-white py-2.5 pr-4 pl-10 text-sm text-slate-900 placeholder:text-slate-400 shadow-xs focus:outline-none focus:ring-2 ${
                   errors.career_goal
-                    ? "border-red-400 focus:border-red-500 focus:ring-red-100"
-                    : "border-slate-300 focus:border-blue-600 focus:ring-blue-100"
-                } disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500`}
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                    : "border-slate-300 focus:border-sky-500 focus:ring-sky-200"
+                } disabled:cursor-not-allowed disabled:bg-slate-50`}
               />
             </div>
-            {errors.career_goal ? (
-              <p id="career_goal-error" className="mt-1.5 flex items-center gap-1 text-xs font-medium text-red-600">
-                <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            {errors.career_goal && (
+              <p className="mt-1 flex items-center gap-1 text-xs text-red-600">
+                <AlertCircle className="h-3.5 w-3.5" />
                 {errors.career_goal}
-              </p>
-            ) : (
-              <p id="career_goal-desc" className="mt-1.5 text-xs text-slate-500">
-                The role you aim to pursue (e.g., Frontend Developer, Data Analyst, Cloud Engineer).
               </p>
             )}
           </div>
@@ -396,7 +431,7 @@ export default function Profile() {
             <button
               type="submit"
               disabled={isSubmitting || isSuccess}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-500 px-6 py-3 text-sm font-semibold text-white shadow-md shadow-sky-500/20 transition hover:bg-sky-600 active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
             >
               {isSubmitting ? (
                 <>
@@ -410,7 +445,7 @@ export default function Profile() {
                 </>
               ) : (
                 <>
-                  Create Profile & Continue
+                  <span>Create Profile & Continue</span>
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </>
               )}

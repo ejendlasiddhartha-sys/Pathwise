@@ -10,6 +10,7 @@ import {
   Lightbulb,
   GraduationCap,
   RotateCcw,
+  Edit3,
 } from "lucide-react";
 
 import CareerOverview from "../components/CareerOverview";
@@ -33,7 +34,7 @@ import {
 export default function Dashboard() {
   const location = useLocation();
 
-  // Retrieve student details from router navigation state or localStorage (persisted in Profile.jsx)
+  // Retrieve student details from router navigation state or localStorage
   const [student, setStudent] = useState(() => {
     if (location.state?.student) {
       return location.state.student;
@@ -45,6 +46,28 @@ export default function Dashboard() {
       }
     } catch {
       // Ignore parse error and fallback
+    }
+    try {
+      const fullProfile = localStorage.getItem("pathwise_profile_full");
+      if (fullProfile) {
+        const parsed = JSON.parse(fullProfile);
+        return {
+          id: 1,
+          name: `${parsed.firstName || ""} ${parsed.lastName || ""}`.trim() || parsed.username,
+          username: parsed.username,
+          email: `${parsed.username}@student.pathwise.edu`,
+          education:
+            parsed.educationType === "Undergraduate"
+              ? parsed.educationDetails?.pursuingQualification || "Undergraduate"
+              : parsed.educationType,
+          career_goal:
+            parsed.employmentStatus === "Employed"
+              ? parsed.employmentDetails?.jobRole || "Frontend Developer"
+              : "Frontend Developer",
+        };
+      }
+    } catch {
+      // Ignore
     }
     return MOCK_STUDENT;
   });
@@ -104,12 +127,13 @@ export default function Dashboard() {
   const handleResetSample = () => {
     localStorage.removeItem("pathwise_student");
     localStorage.removeItem("pathwise_student_id");
+    localStorage.removeItem("pathwise_profile_full");
     setStudent(MOCK_STUDENT);
     setSelectedCareerId("frontend_developer");
   };
 
   return (
-    <div className="space-y-8 pb-12">
+    <div className="space-y-8 pb-12 animate-fade-in">
       {/* 1. Career & Student Identity Header */}
       <CareerOverview
         student={student}
@@ -146,12 +170,12 @@ export default function Dashboard() {
                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                   Target Skills
                 </span>
-                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
                   <Target className="h-4 w-4" />
                 </span>
               </div>
               <div className="mt-4">
-                <span className="text-3xl font-extrabold text-[#0B1F3A]">
+                <span className="text-3xl font-extrabold text-slate-900">
                   {metrics.total}
                 </span>
                 <p className="mt-1 text-xs text-slate-500">
@@ -166,7 +190,7 @@ export default function Dashboard() {
                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                   Requirements Met
                 </span>
-                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
                   <CheckCircle2 className="h-4 w-4" />
                 </span>
               </div>
@@ -191,7 +215,7 @@ export default function Dashboard() {
                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                   Needs Improvement
                 </span>
-                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
                   <TrendingUp className="h-4 w-4" />
                 </span>
               </div>
@@ -216,13 +240,13 @@ export default function Dashboard() {
                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                   Missing Skills
                 </span>
-                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-rose-50 text-rose-700">
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-pink-50 text-pink-600">
                   <AlertTriangle className="h-4 w-4" />
                 </span>
               </div>
               <div className="mt-4">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-extrabold text-rose-700">
+                  <span className="text-3xl font-extrabold text-pink-700">
                     {metrics.missing}
                   </span>
                   <span className="text-xs font-semibold text-slate-400">
@@ -252,11 +276,11 @@ export default function Dashboard() {
         <section className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-5">
             <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-50 text-rose-700">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-pink-50 text-pink-600">
                 <Lightbulb className="h-4 w-4" />
               </span>
               <div>
-                <h2 className="text-base font-bold text-[#0B1F3A]">
+                <h2 className="text-base font-bold text-slate-900">
                   Immediate Focus Areas (Highest Impact)
                 </h2>
                 <p className="text-xs text-slate-500">
@@ -287,9 +311,9 @@ export default function Dashboard() {
       </section>
 
       {/* 6. Dashboard Footer / Profile Quick Navigation */}
-      <footer className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-500">
+      <footer className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-500 shadow-xs">
         <div className="flex items-center gap-2">
-          <GraduationCap className="h-4 w-4 text-blue-700" />
+          <GraduationCap className="h-4 w-4 text-sky-600" />
           <span>
             Viewing diagnostic for <strong>{student.name}</strong> ({student.education || "Student"}).
           </span>
@@ -306,9 +330,10 @@ export default function Dashboard() {
           </button>
 
           <Link
-            to="/profile"
-            className="inline-flex items-center gap-1 font-semibold text-blue-700 hover:text-blue-900 transition"
+            to="/setup-profile"
+            className="inline-flex items-center gap-1.5 font-bold text-sky-600 hover:text-sky-700 transition"
           >
+            <Edit3 className="h-3.5 w-3.5" />
             <span>Update Profile & Goals</span>
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
