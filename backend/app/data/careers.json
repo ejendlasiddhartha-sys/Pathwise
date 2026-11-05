@@ -1,0 +1,377 @@
+[
+  {
+    "id": "frontend_developer",
+    "name": "Frontend Developer",
+    "description": "Designs, builds, and maintains responsive, accessible, and user-centric web application interfaces.",
+    "category": "Software Development",
+    "skills": [
+      {
+        "name": "HTML",
+        "category": "technical",
+        "required_level": 4,
+        "weight": 0.9,
+        "importance": "Essential for creating semantic, accessible, and well-structured web documents."
+      },
+      {
+        "name": "CSS",
+        "category": "technical",
+        "required_level": 4,
+        "weight": 0.9,
+        "importance": "Required for responsive layouts using Flexbox, CSS Grid, media queries, and modern styling."
+      },
+      {
+        "name": "JavaScript",
+        "category": "technical",
+        "required_level": 4,
+        "weight": 0.95,
+        "importance": "Core programming language for DOM manipulation, client-side interactivity, and asynchronous requests."
+      },
+      {
+        "name": "React",
+        "category": "technical",
+        "required_level": 3,
+        "weight": 0.85,
+        "importance": "Standard frontend library for component-based architecture, state management, and reusable UI development."
+      },
+      {
+        "name": "Responsive Web Design",
+        "category": "technical",
+        "required_level": 4,
+        "weight": 0.85,
+        "importance": "Ensures web applications provide an optimal layout and experience across all device screens."
+      },
+      {
+        "name": "Version Control (Git)",
+        "category": "technical",
+        "required_level": 3,
+        "weight": 0.8,
+        "importance": "Crucial for code tracking, branching workflows, team reviews, and collaborative development."
+      },
+      {
+        "name": "REST APIs & HTTP",
+        "category": "technical",
+        "required_level": 3,
+        "weight": 0.75,
+        "importance": "Necessary for client-server communication, JSON data handling, and fetching backend resources."
+      },
+      {
+        "name": "Web Accessibility (a11y)",
+        "category": "technical",
+        "required_level": 2,
+        "weight": 0.6,
+        "importance": "Ensures websites conform to WCAG guidelines and remain usable for people with disabilities."
+      },
+      {
+        "name": "Problem Solving",
+        "category": "professional",
+        "required_level": 3,
+        "weight": 0.75,
+        "importance": "Key for identifying UI defects, debugging runtime script errors, and edge-case resolution."
+      },
+      {
+        "name": "Communication",
+        "category": "professional",
+        "required_level": 3,
+        "weight": 0.7,
+        "importance": "Essential for coordinating effectively with designers, product owners, and backend developers."
+      },
+      {
+        "name": "Attention to Detail",
+        "category": "professional",
+        "required_level": 4,
+        "weight": 0.75,
+        "importance": "Critical for translating design mockups and design systems into pixel-consistent user interfaces."
+      },
+      {
+        "name": "Adaptability & Continuous Learning",
+        "category": "professional",
+        "required_level": 3,
+        "weight": 0.65,
+        "importance": "Vital for staying current with fast-evolving web standards, frontend tools, and framework ecosystems."
+      }
+    ]
+  },
+  {
+    "id": "data_analyst",
+    "name": "Data Analyst",
+    "description": "Inspects, cleans, transforms, and analyzes datasets to uncover actionable insights and support strategic decision-making.",
+    "category": "Data & Analytics",
+    "skills": [
+      {
+        "name": "SQL",
+        "category": "technical",
+        "required_level": 4,
+        "weight": 0.95,
+        "importance": "Fundamental for querying relational databases, filtering, joining tables, and performing aggregations."
+      },
+      {
+        "name": "Spreadsheets (Excel / Google Sheets)",
+        "category": "technical",
+        "required_level": 4,
+        "weight": 0.85,
+        "importance": "Foundational tool for rapid data exploration, pivot tables, lookup functions, and ad-hoc calculations."
+      },
+      {
+        "name": "Python",
+        "category": "technical",
+        "required_level": 3,
+        "weight": 0.85,
+        "importance": "Core programming language for automated data cleaning, processing pipelines, and data analysis."
+      },
+      {
+        "name": "Data Manipulation (Pandas & NumPy)",
+        "category": "technical",
+        "required_level": 3,
+        "weight": 0.85,
+        "importance": "Industry standard libraries for tabular data operations, missing value handling, and transformations."
+      },
+      {
+        "name": "BI & Data Visualization Tools (Tableau / Power BI)",
+        "category": "technical",
+        "required_level": 3,
+        "weight": 0.8,
+        "importance": "Crucial for building interactive stakeholder dashboards and monitoring key organizational metrics."
+      },
+      {
+        "name": "Data Visualization Libraries (Matplotlib / Seaborn)",
+        "category": "technical",
+        "required_level": 2,
+        "weight": 0.6,
+        "importance": "Enables programmatic generation of charts for exploratory data analysis and insight validation."
+      },
+      {
+        "name": "Applied Statistics",
+        "category": "technical",
+        "required_level": 2,
+        "weight": 0.7,
+        "importance": "Required for summarizing distributions, calculating variance, and avoiding misleading interpretations."
+      },
+      {
+        "name": "Data Cleaning & Quality Assurance",
+        "category": "technical",
+        "required_level": 3,
+        "weight": 0.8,
+        "importance": "Ensures analytical reliability by identifying anomalies, duplicates, and invalid records."
+      },
+      {
+        "name": "Critical Thinking",
+        "category": "professional",
+        "required_level": 4,
+        "weight": 0.8,
+        "importance": "Crucial for evaluating data objectivity, identifying underlying patterns, and questioning assumptions."
+      },
+      {
+        "name": "Data Storytelling & Presentation",
+        "category": "professional",
+        "required_level": 3,
+        "weight": 0.75,
+        "importance": "Enables translating complex numerical findings into clear narratives for non-technical stakeholders."
+      },
+      {
+        "name": "Business Acumen",
+        "category": "professional",
+        "required_level": 2,
+        "weight": 0.65,
+        "importance": "Helps map analytical investigations to business goals, performance indicators, and user needs."
+      },
+      {
+        "name": "Collaboration",
+        "category": "professional",
+        "required_level": 3,
+        "weight": 0.65,
+        "importance": "Essential for collaborating with department leaders, software teams, and data engineering."
+      }
+    ]
+  },
+  {
+    "id": "cloud_engineer",
+    "name": "Cloud Engineer",
+    "description": "Provisions, configures, automates, and maintains cloud infrastructure and deployment pipelines for reliable service delivery.",
+    "category": "Cloud Infrastructure",
+    "skills": [
+      {
+        "name": "Cloud Core Services (AWS / Azure / GCP)",
+        "category": "technical",
+        "required_level": 3,
+        "weight": 0.9,
+        "importance": "Foundational understanding of core compute, storage, virtual networks, and identity/access management."
+      },
+      {
+        "name": "Linux & Command Line",
+        "category": "technical",
+        "required_level": 3,
+        "weight": 0.85,
+        "importance": "Primary operating system environment for server administration, package management, and system tasks."
+      },
+      {
+        "name": "Networking Fundamentals (TCP/IP, DNS, VPC)",
+        "category": "technical",
+        "required_level": 3,
+        "weight": 0.8,
+        "importance": "Essential for configuring subnets, routing tables, security groups, and troubleshooting network connectivity."
+      },
+      {
+        "name": "Containerization (Docker)",
+        "category": "technical",
+        "required_level": 3,
+        "weight": 0.8,
+        "importance": "Enables packaging software into standardized portable containers for reproducible execution across environments."
+      },
+      {
+        "name": "Infrastructure as Code (Terraform)",
+        "category": "technical",
+        "required_level": 2,
+        "weight": 0.7,
+        "importance": "Enables declarative provisioning, versioning, and safe reproducibility of cloud infrastructure."
+      },
+      {
+        "name": "CI/CD Pipelines (e.g. GitHub Actions / GitLab CI)",
+        "category": "technical",
+        "required_level": 2,
+        "weight": 0.7,
+        "importance": "Automates software build, testing, and continuous deployment workflows to cloud targets."
+      },
+      {
+        "name": "Cloud Security Basics",
+        "category": "technical",
+        "required_level": 2,
+        "weight": 0.75,
+        "importance": "Mandatory for applying least-privilege access, managing secrets, and securing cloud boundaries."
+      },
+      {
+        "name": "Monitoring & Logging (e.g. CloudWatch / Prometheus)",
+        "category": "technical",
+        "required_level": 2,
+        "weight": 0.65,
+        "importance": "Allows tracking cloud infrastructure health, configuring alerts, and reviewing application logs."
+      },
+      {
+        "name": "Troubleshooting & Root Cause Analysis",
+        "category": "professional",
+        "required_level": 4,
+        "weight": 0.85,
+        "importance": "Crucial for methodically diagnosing infrastructure incidents, deployment failures, and network timeouts."
+      },
+      {
+        "name": "Technical Documentation",
+        "category": "professional",
+        "required_level": 3,
+        "weight": 0.7,
+        "importance": "Vital for maintaining architecture diagrams, disaster recovery runbooks, and onboarding guides."
+      },
+      {
+        "name": "Collaboration & Teamwork",
+        "category": "professional",
+        "required_level": 3,
+        "weight": 0.7,
+        "importance": "Necessary for pairing with developers, operations, and security teams during project rollouts."
+      },
+      {
+        "name": "Adaptability",
+        "category": "professional",
+        "required_level": 3,
+        "weight": 0.65,
+        "importance": "Cloud ecosystems and managed services update rapidly, requiring continual adaptation to new tools."
+      }
+    ]
+  },
+  {
+    "id": "machine_learning_engineer",
+    "name": "Machine Learning Engineer",
+    "description": "Develops, trains, evaluates, and integrates machine learning models and data pipelines into production applications.",
+    "category": "Artificial Intelligence & Data Science",
+    "skills": [
+      {
+        "name": "Python",
+        "category": "technical",
+        "required_level": 4,
+        "weight": 0.95,
+        "importance": "Primary language for model development, scientific computing, data manipulation, and pipeline orchestration."
+      },
+      {
+        "name": "Applied Mathematics & Linear Algebra",
+        "category": "technical",
+        "required_level": 3,
+        "weight": 0.8,
+        "importance": "Core theoretical basis for matrix calculations, gradient descent optimization, and vector spaces."
+      },
+      {
+        "name": "Probability & Statistics",
+        "category": "technical",
+        "required_level": 3,
+        "weight": 0.8,
+        "importance": "Underpins hypothesis testing, distribution evaluation, statistical inference, and metric significance."
+      },
+      {
+        "name": "Classical Machine Learning (Scikit-Learn)",
+        "category": "technical",
+        "required_level": 3,
+        "weight": 0.9,
+        "importance": "Foundational for supervised and unsupervised algorithms, regression, classification, and clustering."
+      },
+      {
+        "name": "Data Processing & Feature Engineering",
+        "category": "technical",
+        "required_level": 3,
+        "weight": 0.85,
+        "importance": "Essential for transforming raw data into reliable features through normalization, encoding, and scaling."
+      },
+      {
+        "name": "Model Evaluation & Validation",
+        "category": "technical",
+        "required_level": 3,
+        "weight": 0.8,
+        "importance": "Ensures model generalization across datasets using cross-validation, precision, recall, and ROC-AUC."
+      },
+      {
+        "name": "Deep Learning Fundamentals (PyTorch / TensorFlow)",
+        "category": "technical",
+        "required_level": 2,
+        "weight": 0.75,
+        "importance": "Covers core concepts of multi-layer neural networks, loss backpropagation, and tensor operations."
+      },
+      {
+        "name": "Version Control (Git)",
+        "category": "technical",
+        "required_level": 3,
+        "weight": 0.75,
+        "importance": "Necessary for tracking code experiments, sharing pipelines, and collaborative software development."
+      },
+      {
+        "name": "Model Serving & APIs (FastAPI / Flask)",
+        "category": "technical",
+        "required_level": 2,
+        "weight": 0.7,
+        "importance": "Required for exposing trained model inference endpoints to client applications and services."
+      },
+      {
+        "name": "Analytical & Experimental Thinking",
+        "category": "professional",
+        "required_level": 4,
+        "weight": 0.85,
+        "importance": "Critical for systematically formulating hypotheses, interpreting validation loss, and iterating models."
+      },
+      {
+        "name": "Cross-Functional Communication",
+        "category": "professional",
+        "required_level": 3,
+        "weight": 0.7,
+        "importance": "Essential for explaining model trade-offs, confidence levels, and technical behavior to non-ML team members."
+      },
+      {
+        "name": "Research & Continuous Learning",
+        "category": "professional",
+        "required_level": 3,
+        "weight": 0.75,
+        "importance": "Necessary to keep pace with rapid research advancements, modern frameworks, and open-source models."
+      },
+      {
+        "name": "Ethical AI & Data Privacy",
+        "category": "professional",
+        "required_level": 2,
+        "weight": 0.65,
+        "importance": "Promotes awareness of algorithmic bias, training data representativeness, user privacy, and compliance."
+      }
+    ]
+  }
+]
