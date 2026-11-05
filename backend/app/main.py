@@ -8,7 +8,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.database import create_db_and_tables
-from app.routes.system import router
+from app.routes.students import router as students_router
+from app.routes.system import router as system_router
 
 load_dotenv()
 
@@ -42,7 +43,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(router)
+app.include_router(system_router)
+app.include_router(students_router)
 
 
 @app.exception_handler(Exception)

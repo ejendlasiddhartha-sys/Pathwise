@@ -6,6 +6,6 @@ class Student(SQLModel, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
     name: str
-    email: str
+    email: str = Field(unique=True, index=True)
     education: str
     career_goal: str
