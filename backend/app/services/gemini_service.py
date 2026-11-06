@@ -329,24 +329,29 @@ STUDENT PROFILE DATA (ANONYMIZED):
 - Significant Profile Changes: {json.dumps(changes_info)}
 """
 
-    # Attempt calling official google-genai SDK
+      # Attempt standard Gemini generation first.
     try:
         from google import genai
         from google.genai import types
 
         client = genai.Client(api_key=api_key)
 
-        models_to_try = [PREFERRED_MODEL] + [m for m in FALLBACK_MODELS if m != PREFERRED_MODEL]
+        models_to_try = [PREFERRED_MODEL] + [
+            m for m in FALLBACK_MODELS if m != PREFERRED_MODEL
+        ]
+
         last_error = None
 
-        # First try with Google Search grounding
         for model_name in models_to_try:
             try:
-                logger.info(f"Invoking Gemini model {model_name} with Google Search grounding...")
+                logger.info(
+                    f"Invoking Gemini model {model_name} (standard mode)..."
+                )
+
                 config = types.GenerateContentConfig(
-                    tools=[types.Tool(google_search=types.GoogleSearch())],
                     temperature=0.2,
                 )
+
                 response = client.models.generate_content(
                     model=model_name,
                     contents=prompt,
@@ -355,62 +360,45 @@ STUDENT PROFILE DATA (ANONYMIZED):
 
                 if response and response.text:
                     parsed_json = extract_json_from_text(response.text)
+
                     if parsed_json:
-                        # Extract search grounding sources if available
-                        grounding_sources = []
-                        try:
-                            if hasattr(response, "candidates") and response.candidates:
-                                candidate = response.candidates[0]
-                                if hasattr(candidate, "grounding_metadata") and candidate.grounding_metadata:
-                                    g_meta = candidate.grounding_metadata
-                                    if hasattr(g_meta, "grounding_chunks") and g_meta.grounding_chunks:
-                                        for chunk in g_meta.grounding_chunks:
-                                            if hasattr(chunk, "web") and chunk.web:
-                                                grounding_sources.append({
-                                                    "title": getattr(chunk.web, "title", "Official Source"),
-                                                    "url": getattr(chunk.web, "uri", ""),
-                                                })
-                        except Exception as e:
-                            logger.debug(f"Grounding source extraction note: {e}")
+                        parsed_json["generated_at"] = (
+                            datetime.datetime.now(
+                                datetime.timezone.utc
+                            ).isoformat()
+                        )
 
-                        if grounding_sources:
-                            parsed_json["sources"] = grounding_sources
-                        elif not parsed_json.get("sources"):
-                            parsed_json["sources"] = [{"title": "Google Search Grounded", "url": "https://google.com"}]
+                        validated = RecommendationData.model_validate(
+                            parsed_json
+                        )
 
-                        parsed_json["generated_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
-                        validated = RecommendationData.model_validate(parsed_json)
-                        return validated, True
-            except Exception as exc:
-                last_error = exc
-                logger.warning(f"Search-grounded call on {model_name} failed: {exc}. Retrying standard...")
-                break
+                        logger.info(
+                            f"Gemini generation successful using {model_name}."
+                        )
 
-        # If search grounding failed or hit limitations, try standard generation without search tool
-        for model_name in models_to_try:
-            try:
-                logger.info(f"Invoking Gemini model {model_name} (standard mode)...")
-                config = types.GenerateContentConfig(
-                    temperature=0.2,
-                )
-                response = client.models.generate_content(
-                    model=model_name,
-                    contents=prompt,
-                    config=config,
-                )
-
-                if response and response.text:
-                    parsed_json = extract_json_from_text(response.text)
-                    if parsed_json:
-                        parsed_json["generated_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
-                        validated = RecommendationData.model_validate(parsed_json)
                         return validated, False
+
+                    last_error = ValueError(
+                        f"Gemini returned invalid JSON using {model_name}."
+                    )
+
+                else:
+                    last_error = ValueError(
+                        f"Gemini returned an empty response using {model_name}."
+                    )
+
             except Exception as exc:
                 last_error = exc
-                logger.warning(f"Standard call on {model_name} failed: {exc}")
+                logger.warning(
+                    f"Standard generation on {model_name} failed: {exc}"
+                )
 
-        # If all live model attempts failed (e.g. quota 429), return verified baseline
-        logger.error(f"Gemini API calls failed: {last_error}. Falling back to verified baseline.")
+        # All standard generation attempts failed.
+        logger.error(
+            f"All Gemini generation attempts failed: {last_error}. "
+            "Falling back to verified baseline."
+        )
+
         return (
             get_verified_baseline_recommendation(
                 target_career_name=target_career_name,
@@ -419,7 +407,10 @@ STUDENT PROFILE DATA (ANONYMIZED):
                 calculated_skill_gaps=calculated_skill_gaps,
                 readiness_score=readiness_score,
                 changes_detected=changes_detected,
-                custom_notice="Live AI quota temporarily exhausted or network offline. Showing verified career benchmarks.",
+                custom_notice=(
+                    "Live AI generation is temporarily unavailable. "
+                    "Showing verified career benchmarks."
+                ),
             ),
             False,
         )
