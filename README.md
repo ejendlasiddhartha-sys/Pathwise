@@ -1,198 +1,202 @@
 # Pathwise
-A Student Certification and Skill Gap analysis tool.
 
-Pathwise is a web app that helps students see which skills and certifications stand between them and a career they want. A student will enter their background and goal. The app will compare that profile with the skills a career usually needs, then recommend what to learn next.
+**AI-assisted career readiness and skill-gap analysis for students.**
 
-This repository is the milestone 1 foundation: a React frontend, a FastAPI backend, and a local SQLite database. Gemini-powered recommendations are planned for a later milestone and are not connected yet.
+Pathwise helps students compare their current skills with role-specific benchmarks, understand skill gaps, and explore certifications and next steps.
 
-The project is free software under the GNU General Public License v3.0. See `LICENSE`.
+> **Status:** Hackathon MVP / portfolio project. Career analysis and Gemini-backed recommendations are implemented. Authentication is currently simulated in the frontend and is not production-ready.
 
-## Problem being solved
+## Live application
 
-Students often collect courses and certificates without a clear picture of what a target career still requires. Pathwise is meant to make that gap visible:
+- Frontend: https://pathwise-135u.vercel.app/
+- Backend: https://pathwise-rj24.vercel.app
+- Interactive API docs: https://pathwise-rj24.vercel.app/docs
 
-- What the student already studied or can do.
-- What the career goal typically requires.
-- Which skills or certifications are still missing.
+## Features
 
-Milestone 1 only prepares the app so the team can build those features on a working base.
+- Student profile creation, retrieval and update through FastAPI endpoints.
+- Career benchmark catalogue for Frontend Developer, Data Analyst, Cloud Engineer and Machine Learning Engineer.
+- Skill-gap analysis with priority levels.
+- Weighted readiness estimate from 0–100.
+- Gemini-generated priority skills, certification suggestions and next steps.
+- Curated recommendation fallback when Gemini is unavailable.
+- Cached recommendations and explicit refresh support.
 
-## Technology stack
+## How it works
 
-Frontend:
+1. The backend loads the selected role from `backend/app/data/careers.json`.
+2. It compares reported skill levels with career requirements: `gap = max(required_level - current_level, 0)`.
+3. It calculates a weighted readiness estimate:
 
-- React with JavaScript
-- Vite
-- Tailwind CSS
-- React Router
-- Axios
-- Lucide React icons
+   `readiness = (sum(weight × min(current_level, required_level)) / sum(weight × required_level)) × 100`
 
-Backend:
+4. The recommendation service sends anonymised career-profile factors to Gemini.
+5. If generation fails or returns invalid data, curated baseline recommendations are used.
 
-- Python
-- FastAPI
-- SQLModel
-- Pydantic
-- SQLite
-- Uvicorn
+Skill levels use a 0–5 scale. The readiness score is an indicative comparison against the included catalogue, not a validated employment prediction.
 
-AI:
+## Technology
 
-- The Gemini API will be added in a later milestone. No API key belongs in the frontend.
+| Layer | Stack |
+|---|---|
+| Frontend | React, JavaScript, Vite, Tailwind CSS |
+| UI / routing | React Router, Lucide React, Recharts |
+| API client | Axios |
+| Backend | Python, FastAPI, SQLModel, Pydantic |
+| AI | Google Gemini API (`google-genai`) |
+| Database | SQLite locally; PostgreSQL supported for deployment |
+| Hosting | Vercel |
 
-## Project folder structure
+## Structure
 
 ```text
 Pathwise/
 ├── frontend/
-│   ├── public/                 Static files such as the favicon
-│   ├── src/
-│   │   ├── components/         Shared interface pieces, starting with the navbar
-│   │   ├── pages/              One file per screen
-│   │   ├── services/           Axios calls to the backend
-│   │   ├── App.jsx             Routes
-│   │   ├── main.jsx            React entry point
-│   │   └── index.css           Tailwind import
-│   ├── .env.example
-│   ├── index.html
-│   ├── package.json
-│   └── vite.config.js
+│   └── src/
+│       ├── components/
+│       ├── context/
+│       ├── data/             # Sample dashboard data
+│       ├── pages/
+│       └── services/
 ├── backend/
 │   ├── app/
-│   │   ├── routes/             HTTP endpoints
-│   │   ├── services/           Business logic for later milestones
-│   │   ├── data/               Local reference data for later milestones
-│   │   ├── main.py             FastAPI app, CORS, and startup
-│   │   ├── database.py         SQLite connection and table creation
-│   │   ├── models.py           Database tables
-│   │   └── schemas.py          Request and response shapes
-│   ├── .env.example
-│   └── requirements.txt
-├── .gitignore
-├── LICENSE
-└── README.md
+│   │   ├── data/             # Career benchmark catalogue
+│   │   ├── routes/
+│   │   ├── services/
+│   │   ├── database.py
+│   │   ├── models.py
+│   │   └── schemas.py
+│   └── tests/
+├── docs/
+├── Pathwise_API_CONTRACT.md
+├── CONTRIBUTING.md
+└── LICENSE
 ```
 
-## Installation
+## Run locally
 
-Use two terminals. Install each side once.
+### Prerequisites
 
-### Frontend
-
-Requirements: Node.js 20 or newer, with npm.
-
-```powershell
-cd frontend
-npm install
-copy .env.example .env
-```
-
-`frontend/.env` is only for your machine. It is ignored by Git. `VITE_API_URL` tells Axios where the backend lives.
+- Node.js and npm
+- Python 3.11+
+- Gemini API key for live AI recommendations (optional; fallback data is available)
 
 ### Backend
 
-Requirements: Python 3.11 or newer.
-
-From the repository root:
-
-```powershell
-cd backend
+```bash
+git clone https://github.com/ejendlasiddhartha-sys/Pathwise.git
+cd Pathwise/backend
 python -m venv .venv
+```
+
+Activate the environment:
+
+```powershell
+# Windows PowerShell
 .\.venv\Scripts\Activate.ps1
+```
+
+```bash
+# macOS / Linux
+source .venv/bin/activate
+```
+
+Install dependencies and create the local environment file:
+
+```bash
 pip install -r requirements.txt
-copy .env.example .env
 ```
 
-`uvicorn` is installed without the optional `standard` extras. Those extras pull in PyYAML, which does not yet publish a Python 3.15 wheel, and building it locally is blocked on this machine. `uvicorn --reload` still works with Uvicorn's built-in reloader.
+Copy `backend/.env.example` to `backend/.env`, then configure:
 
-If PowerShell blocks the activate script, start the server with the virtual environment's Python directly:
-
-```powershell
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
+```dotenv
+APP_NAME=Pathwise
+DATABASE_URL=sqlite:///./pathwise.db
+GEMINI_API_KEY=your_gemini_api_key
+FRONTEND_URL=http://localhost:5173
 ```
 
-Run backend commands from the `backend` folder. `DATABASE_URL=sqlite:///./pathwise.db` creates the database file in that folder.
+Run from the `backend` directory:
 
-## Frontend startup
-
-From `frontend`, after installation:
-
-```powershell
-npm run dev
-```
-
-If PowerShell blocks running scripts (npm.ps1), run `npm.cmd run dev` or run in Command Prompt.
-
-Open http://localhost:5173.
-
-## Backend startup
-
-From `backend`, with the virtual environment active:
-
-```powershell
+```bash
 uvicorn app.main:app --reload
 ```
 
-The API runs at http://localhost:8000. Interactive docs are at http://localhost:8000/docs.
+API: http://localhost:8000  
+Docs: http://localhost:8000/docs
 
-Start the backend before using the connection test on the home page.
+### Frontend
 
-## API endpoints
+In a second terminal:
 
-### `GET /health`
-
-Checks that the API process is running.
-
-```json
-{
-  "status": "ok",
-  "application": "Pathwise"
-}
+```bash
+cd frontend
+npm install
 ```
 
-### `GET /api/test`
+Copy `frontend/.env.example` to `frontend/.env` and set:
 
-Checks that the frontend can reach the API. The home page button calls this route.
-
-```json
-{
-  "message": "Frontend successfully connected to Pathwise backend"
-}
+```dotenv
+VITE_API_URL=http://localhost:8000
 ```
 
-Unexpected server errors return HTTP 500 with a short `detail` message. The traceback stays in the backend terminal.
+Run:
 
-The browser is allowed to call this API from `http://localhost:5173` and `http://127.0.0.1:5173`.
+```bash
+npm run dev
+```
 
-## Database
+Open http://localhost:5173.
 
-SQLite is a single file, `backend/pathwise.db`. FastAPI creates the file and tables when the server starts. The file is listed in `.gitignore`, so each teammate gets their own local database.
+## API overview
 
-The first table is `student`:
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/health` | API health |
+| GET | `/api/test` | Connectivity test |
+| POST | `/api/students` | Create student |
+| GET | `/api/students/{id}` | Retrieve student |
+| PUT | `/api/students/{id}` | Update student |
+| GET | `/api/students/{id}/recommendations` | Retrieve or generate recommendations |
+| POST | `/api/students/{id}/recommendations/refresh` | Force recommendation refresh |
 
-| Column | Type | Notes |
-| --- | --- | --- |
-| `id` | integer | Primary key, assigned automatically |
-| `name` | string | Student name |
-| `email` | string | Student email |
-| `education` | string | Current education or background |
-| `career_goal` | string | Career the student wants |
+Use `/docs` for exact request and response schemas.
 
-No student records are created in this milestone. `backend/app/database.py` owns the connection. Route files should not open SQLite themselves.
+## Environment variables
 
-## Team development instructions
+| Variable | Location | Purpose |
+|---|---|---|
+| `GEMINI_API_KEY` | Backend | Gemini API key; keep private |
+| `DATABASE_URL` | Backend | SQLAlchemy database URL |
+| `APP_NAME` | Backend | FastAPI application title |
+| `FRONTEND_URL` | Backend | Allowed frontend CORS origin(s) |
+| `VITE_API_URL` | Frontend | Backend base URL |
 
-Four people can work in this repo without stepping on the setup:
+For deployment, configure secrets in the hosting provider's environment settings. Never commit real `.env` files. Variables beginning with `VITE_` are exposed to browser code.
 
-1. Clone the repository and stay on a new branch for your task. Do not rewrite `main` history.
-2. Copy both `.env.example` files to `.env` as shown above. Never commit `.env`, `pathwise.db`, or an API key.
-3. Keep Gemini keys, when they exist, in `backend/.env` only. The React app must not contain secrets. Only variables that start with `VITE_` are visible in the browser.
-4. Use one terminal for `npm run dev` and another for `uvicorn`.
-5. Add a page in `frontend/src/pages` and register it in `App.jsx`. Put shared buttons and layout in `frontend/src/components`. Put every backend call in `frontend/src/services/api.js`.
-6. Add an endpoint in a file under `backend/app/routes`, then include that router from `backend/app/main.py`. Put database tables in `models.py` and response shapes in `schemas.py`.
-7. Add a Python package to `backend/requirements.txt` and a JavaScript package with npm, then tell the team. Do not add Docker, authentication, or an AI library until that milestone starts.
-8. This project stays under the GNU GPL v3.0. Keep the existing `LICENSE` file with the code you share.
-9. Before you say a screen works, click through it in the browser with the backend running.
+## Known limitations
 
-Suggested split for the next milestone: one person on the student form, one on the API that saves a student, one on the dashboard layout, and one on sample career-skill data in `backend/app/data`.
+- Email/password, Google and Apple sign-in are simulated frontend flows; production authentication is not implemented.
+- Some dashboard and profile experiences use local storage and sample data. Not every displayed value is necessarily a persisted database record.
+- Gemini availability is external; curated benchmark data is used as a fallback.
+- The career catalogue is limited and should not be treated as a complete labour-market dataset.
+- Certification details should be verified with the issuing provider.
+- Readiness is a product-defined estimate, not a guarantee of employability.
+
+## Tests
+
+Backend tests are in `backend/tests/`. From the backend directory:
+
+```bash
+python -m pytest
+```
+
+## Security
+
+- Never commit `.env`, API keys, database credentials, tokens or real student data.
+- Keep Gemini credentials on the backend only.
+- If a secret was committed, rotate/revoke it and review Git history; deleting it from the latest commit is insufficient.
+
+## Licence
+
+GNU General Public License v3.0. See [LICENSE](LICENSE).
