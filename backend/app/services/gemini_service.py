@@ -237,7 +237,7 @@ async def generate_ai_career_recommendation(
     completed_certifications: list[dict[str, Any]],
     changes_detected: list[str] | None = None,
 ) -> tuple[RecommendationData, bool]:
-    """Generate career recommendations using Google Gemini API with Google Search grounding.
+    """Generate career recommendations using Google Gemini API
 
     Returns:
         (RecommendationData, grounding_used: bool)
@@ -329,7 +329,7 @@ STUDENT PROFILE DATA (ANONYMIZED):
 - Significant Profile Changes: {json.dumps(changes_info)}
 """
 
-      # Attempt standard Gemini generation first.
+    # Attempt standard Gemini generation first.
     try:
         from google import genai
         from google.genai import types
